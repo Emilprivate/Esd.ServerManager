@@ -1,0 +1,23 @@
+{
+  "name": "theblackswan.servermanager",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "install-all": "npm install && npm --prefix backend install && npm --prefix frontend install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@monaco-editor/react": "^4.6.0",
+    "chart.js": "^4.4.6",
+    "react-chartjs-2": "^5.2.0"
+  }
+}
