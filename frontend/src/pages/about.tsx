@@ -30,14 +30,10 @@ const About: React.FC = () => {
 
   return (
     <div className="relative flex flex-col items-center justify-center flex-1 bg-gray-900 text-gray-200 overflow-hidden">
-      {/* Animated Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-br opacity-15 animate-gradient" />
-        <div className="absolute inset-0 bg-pattern opacity-80" />{" "}
-        {/* Pattern overlay */}
+        <div className="absolute inset-0 bg-pattern opacity-80" />
       </div>
-
-      {/* Main Content */}
       <div className="relative z-10 w-full max-w-4xl p-6 sm:p-8">
         {loading ? (
           <div className="flex flex-col items-center justify-center">
@@ -62,7 +58,6 @@ const About: React.FC = () => {
                 {readmeContent}
               </ReactMarkdown>
             </div>
-            {/* Social Icons */}
             <div className="flex justify-center mt-8 space-x-8">
               {config.githubUrl && (
                 <a

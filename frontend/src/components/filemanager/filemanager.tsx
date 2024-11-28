@@ -149,18 +149,6 @@ const FileManager: React.FC = () => {
     }
   };
 
-  const handleConfirmUpload = async () => {
-    if (uploadFiles) {
-      setShowUploadModal(false);
-      await uploadFilesToServer(uploadFiles);
-    }
-  };
-
-  const handleCancelUpload = () => {
-    setShowUploadModal(false);
-    setUploadFiles(null);
-  };
-
   const handleConfirmDelete = async () => {
     setShowDeleteModal(false);
     await handleDeleteSelected();
@@ -298,7 +286,6 @@ const FileManager: React.FC = () => {
               type="file"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               onChange={handleUpload}
-              ref={(input) => input && (input.webkitdirectory = true)}
               multiple
             />
           </label>

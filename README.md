@@ -1,4 +1,8 @@
+# Esd.ServerManager
+
 **Esd.ServerManager** is a simple, lightweight server management tool developed for fun. It helps with basic server management tasks such as monitoring server stats, managing files, and viewing logs.
+
+![Preview](assets/Preview.png)
 
 ## Features
 
