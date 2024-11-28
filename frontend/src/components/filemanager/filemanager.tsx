@@ -37,9 +37,9 @@ const FileManager: React.FC = () => {
   const [newFolderName, setNewFolderName] = useState<string>("");
 
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
-  const [showUploadModal, setShowUploadModal] = useState<boolean>(false);
+  const [, setShowUploadModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
-  const [uploadFiles, setUploadFiles] = useState<FileList | null>(null);
+  const [, setUploadFiles] = useState<FileList | null>(null);
 
   const fetchFiles = async () => {
     setLoading(true);

@@ -1,5 +1,5 @@
 import React from "react";
-import { FaServer, FaFileAlt, FaCog, FaInfoCircle } from "react-icons/fa";
+import { FaServer, FaFileAlt, FaInfoCircle } from "react-icons/fa";
 
 interface NavbarProps {
   currentTab: string;
