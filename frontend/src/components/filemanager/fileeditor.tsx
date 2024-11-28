@@ -118,7 +118,7 @@ const FileEditor: React.FC<FileEditorProps> = ({ filePath, onClose }) => {
             theme="vs-dark"
             language={language}
             value={content || ""}
-            onChange={(value: string | null) => {
+            onChange={(value: string | undefined) => {
               setContent(value || "");
               setUnsavedChanges(value !== originalContent);
             }}

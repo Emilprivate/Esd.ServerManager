@@ -1,5 +1,5 @@
-import React from 'react';
-import { FaServer, FaFileAlt, FaCog, FaInfoCircle } from 'react-icons/fa';
+import React from "react";
+import { FaServer, FaFileAlt, FaCog, FaInfoCircle } from "react-icons/fa";
 
 interface NavbarProps {
   currentTab: string;
@@ -8,10 +8,9 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ currentTab, onTabChange }) => {
   const tabs = [
-    { name: 'Server', icon: <FaServer /> },
-    { name: 'Logs', icon: <FaFileAlt /> },
-    { name: 'Settings', icon: <FaCog /> },
-    { name: 'About', icon: <FaInfoCircle /> },
+    { name: "Server", icon: <FaServer /> },
+    { name: "Logs", icon: <FaFileAlt /> },
+    { name: "About", icon: <FaInfoCircle /> },
   ];
 
   return (
@@ -22,8 +21,8 @@ const Navbar: React.FC<NavbarProps> = ({ currentTab, onTabChange }) => {
             key={tab.name}
             className={`flex items-center space-x-2 cursor-pointer px-4 py-2 rounded-md transition-all duration-300 ${
               currentTab === tab.name
-                ? 'text-blue-400 bg-gray-800'
-                : 'text-gray-300 hover:text-blue-300 hover:bg-gray-800'
+                ? "text-blue-400 bg-gray-800"
+                : "text-gray-300 hover:text-blue-300 hover:bg-gray-800"
             }`}
             onClick={() => onTabChange(tab.name)}
           >
