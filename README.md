@@ -10,4 +10,3 @@
 
 - **Frontend**: React, Vite, Tailwind CSS
 - **Backend**: Express.js
-- **Other Tools**: Chart.js for visualizations, Monaco Editor for file editing.
