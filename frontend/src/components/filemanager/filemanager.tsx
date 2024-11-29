@@ -28,18 +28,20 @@ const FileManager: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [loaderMessage, setLoaderMessage] = useState<string>("");
   const { addToast } = useToast();
-
   const [searchPath, setSearchPath] = useState<string>("");
   const [isCreatingFile, setIsCreatingFile] = useState<boolean>(false);
   const [newFilename, setNewFilename] = useState<string>("");
-
   const [isCreatingFolder, setIsCreatingFolder] = useState<boolean>(false);
   const [newFolderName, setNewFolderName] = useState<string>("");
-
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [, setShowUploadModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [, setUploadFiles] = useState<FileList | null>(null);
+  const [renamingFile, setRenamingFile] = useState<string | null>(null);
+  const [newFilenameForRename, setNewFilenameForRename] = useState<string>("");
+  const [movingFile, setMovingFile] = useState<string | null>(null);
+  const [newPathForMove, setNewPathForMove] = useState<string>("");
+  const [draggingFile, setDraggingFile] = useState<string | null>(null);
 
   const fetchFiles = async () => {
     setLoading(true);
@@ -69,6 +71,42 @@ const FileManager: React.FC = () => {
 
   const navigateTo = (name: string) => {
     setCurrentPath(`${currentPath}/${name}`);
+  };
+
+  const handleDragStart = (fileName: string) => {
+    setDraggingFile(fileName);
+  };
+
+  const handleDrop = async (folderName: string) => {
+    if (!draggingFile) return;
+
+    const targetPath = `${currentPath}/${folderName}`;
+    const filePath = `${currentPath}/${draggingFile}`;
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        `/api/files/move?path=${encodeURIComponent(filePath)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ newPath: targetPath }),
+        }
+      );
+
+      if (response.ok) {
+        addToast("success", `Moved ${draggingFile} to ${folderName}`);
+        fetchFiles();
+      } else {
+        throw new Error();
+      }
+    } catch {
+      addToast("error", `Failed to move ${draggingFile} to ${folderName}`);
+    } finally {
+      setDraggingFile(null);
+      setLoading(false);
+    }
   };
 
   const handleDeleteSelected = async () => {
@@ -118,9 +156,7 @@ const FileManager: React.FC = () => {
   const uploadFilesToServer = async (files: FileList) => {
     setLoading(true);
     setLoaderMessage(`Uploading files...`);
-
     const formData = new FormData();
-
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const relativePath = file.webkitRelativePath || file.name;
@@ -149,9 +185,80 @@ const FileManager: React.FC = () => {
     }
   };
 
-  const handleConfirmDelete = async () => {
-    setShowDeleteModal(false);
-    await handleDeleteSelected();
+  const handleRenameFile = async () => {
+    if (!renamingFile || newFilenameForRename.trim() === "") {
+      addToast("error", "Please enter a valid filename.");
+      return;
+    }
+    setLoading(true);
+    setLoaderMessage(`Renaming ${renamingFile} to ${newFilenameForRename}...`);
+    try {
+      const response = await fetch(
+        `/api/files/rename?path=${encodeURIComponent(currentPath)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            oldName: renamingFile,
+            newName: newFilenameForRename,
+          }),
+        }
+      );
+      if (response.ok) {
+        setFiles((prevFiles) =>
+          prevFiles.map((file) =>
+            file.name === renamingFile
+              ? { ...file, name: newFilenameForRename }
+              : file
+          )
+        );
+        setRenamingFile(null);
+        setNewFilenameForRename("");
+        addToast("success", `File renamed successfully!`);
+      } else {
+        throw new Error();
+      }
+    } catch {
+      setError("Failed to rename the file.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMoveFile = async () => {
+    if (!movingFile || newPathForMove.trim() === "") {
+      addToast("error", "Please enter a valid path.");
+      return;
+    }
+    setLoading(true);
+    setLoaderMessage(`Moving ${movingFile} to ${newPathForMove}...`);
+    try {
+      const response = await fetch(
+        `/api/files/move?path=${encodeURIComponent(currentPath)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: movingFile,
+            newPath: newPathForMove,
+          }),
+        }
+      );
+      if (response.ok) {
+        setFiles((prevFiles) =>
+          prevFiles.filter((file) => file.name !== movingFile)
+        );
+        setMovingFile(null);
+        setNewPathForMove("");
+        addToast("success", `File moved successfully!`);
+      } else {
+        throw new Error();
+      }
+    } catch {
+      setError("Failed to move the file.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleSelectFile = (name: string) => {
@@ -242,6 +349,11 @@ const FileManager: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleConfirmDelete = async () => {
+    setShowDeleteModal(false);
+    await handleDeleteSelected();
   };
 
   if (editingFile) {
@@ -419,6 +531,68 @@ const FileManager: React.FC = () => {
           </div>
         </div>
       )}
+      {renamingFile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <h3 className="text-white text-lg mb-4">Rename File</h3>
+            <input
+              type="text"
+              className="w-full p-2 mb-4 bg-gray-700 text-white rounded"
+              placeholder="Enter new filename"
+              value={newFilenameForRename}
+              onChange={(e) => setNewFilenameForRename(e.target.value)}
+            />
+            <div className="flex justify-end space-x-2">
+              <button
+                className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded"
+                onClick={() => {
+                  setRenamingFile(null);
+                  setNewFilenameForRename("");
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded"
+                onClick={handleRenameFile}
+              >
+                Rename
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {movingFile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <h3 className="text-white text-lg mb-4">Move File</h3>
+            <input
+              type="text"
+              className="w-full p-2 mb-4 bg-gray-700 text-white rounded"
+              placeholder="Enter new path"
+              value={newPathForMove}
+              onChange={(e) => setNewPathForMove(e.target.value)}
+            />
+            <div className="flex justify-end space-x-2">
+              <button
+                className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded"
+                onClick={() => {
+                  setMovingFile(null);
+                  setNewPathForMove("");
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 rounded"
+                onClick={handleMoveFile}
+              >
+                Move
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="bg-gray-800 p-4 rounded-lg shadow-lg flex-1 overflow-auto">
         {error && <p className="text-red-400">{error}</p>}
         <ul className="divide-y divide-gray-700">
@@ -473,6 +647,26 @@ const FileManager: React.FC = () => {
                       <FaEdit className="text-lg" />
                     </button>
                   )}
+                <button
+                  aria-label="Rename File"
+                  className="text-yellow-400 hover:text-yellow-300"
+                  onClick={() => {
+                    setRenamingFile(file.name);
+                    setNewFilenameForRename(file.name);
+                  }}
+                >
+                  <FaEdit className="text-lg" />
+                </button>
+                <button
+                  aria-label="Move File"
+                  className="text-blue-400 hover:text-blue-300"
+                  onClick={() => {
+                    setMovingFile(file.name);
+                    setNewPathForMove("");
+                  }}
+                >
+                  <FaArrowUp className="text-lg" />
+                </button>
                 <button
                   aria-label="Delete File"
                   className="text-red-400 hover:text-red-300"

@@ -60,24 +60,20 @@ router.delete("/delete", (req, res) => {
     if (stats.isDirectory()) {
       fs.rmdir(filePath, { recursive: true }, (err) => {
         if (err) {
-          return res
-            .status(500)
-            .json({
-              error: "Failed to delete the directory.",
-              details: err.message,
-            });
+          return res.status(500).json({
+            error: "Failed to delete the directory.",
+            details: err.message,
+          });
         }
         res.json({ message: "Directory deleted successfully." });
       });
     } else {
       fs.unlink(filePath, (err) => {
         if (err) {
-          return res
-            .status(500)
-            .json({
-              error: "Failed to delete the file.",
-              details: err.message,
-            });
+          return res.status(500).json({
+            error: "Failed to delete the file.",
+            details: err.message,
+          });
         }
         res.json({ message: "File deleted successfully." });
       });
@@ -131,6 +127,56 @@ router.post("/create", (req, res) => {
       message: "File created successfully.",
       filename: finalFilename,
     });
+  });
+});
+
+router.post("/rename", (req, res) => {
+  const dirPath = req.query.path || ".";
+  const { oldName, newName } = req.body;
+
+  if (
+    !oldName ||
+    !newName ||
+    typeof oldName !== "string" ||
+    typeof newName !== "string"
+  ) {
+    return res.status(400).json({ error: "Invalid old or new name." });
+  }
+
+  const oldPath = path.resolve(dirPath, oldName);
+  const newPath = path.resolve(dirPath, newName);
+
+  fs.rename(oldPath, newPath, (err) => {
+    if (err) {
+      return res.status(500).json({
+        error: "Failed to rename the file or folder.",
+        details: err.message,
+      });
+    }
+    res.json({ message: "File or folder renamed successfully." });
+  });
+});
+
+router.post("/move", (req, res) => {
+  const currentPath = path.resolve(req.query.path || ".");
+  const { newPath } = req.body;
+
+  if (!newPath || typeof newPath !== "string") {
+    return res.status(400).json({ error: "Invalid new path." });
+  }
+
+  const targetPath = path.resolve(newPath);
+
+  fs.rename(currentPath, targetPath, (err) => {
+    if (err) {
+      return res
+        .status(500)
+        .json({
+          error: "Failed to move the file or folder.",
+          details: err.message,
+        });
+    }
+    res.json({ message: "File or folder moved successfully." });
   });
 });
 
